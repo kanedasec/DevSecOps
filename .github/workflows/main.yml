@@ -6,7 +6,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
   static_analysis:
@@ -26,22 +26,22 @@ jobs:
 
       - name: Run Bandit
         run: |
-          bandit -r app -f csv -o bandit_results.csv || true
+          bandit -r app -f json -o bandit_results.json || true
 
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
           config: p/ci
-          output: semgrep_results.csv
-          output-format: csv
+          output: semgrep_results.json
+          output-format: json
 
       - name: Upload Static Analysis Reports
         uses: actions/upload-artifact@v4
         with:
           name: static-analysis-reports
           path: |
-            bandit_results.csv
-            semgrep_results.csv
+            bandit_results.json
+            semgrep_results.json
 
   container_and_sca_scan:
     name: 🐳 Container & Dependency Scan (Trivy)
@@ -61,36 +61,41 @@ jobs:
 
       - name: Scan Docker image
         run: |
-          trivy image --format csv --output trivy_image.csv --severity HIGH,CRITICAL flask_app || true
+          trivy image --format json --output trivy_image.json --severity HIGH,CRITICAL flask_app || true
 
       - name: Scan filesystem (SCA)
         run: |
-          trivy fs --format csv --output trivy_fs.csv --scanners vuln,license,secret --severity HIGH,CRITICAL . || true
+          trivy fs --format json --output trivy_fs.json --scanners vuln,license,secret --severity HIGH,CRITICAL . || true
 
       - name: Upload Trivy Reports
         uses: actions/upload-artifact@v4
         with:
           name: trivy-reports
           path: |
-            trivy_image.csv
-            trivy_fs.csv
+            trivy_image.json
+            trivy_fs.json
 
   evaluate_results:
     name: ✅ Evaluate and Finalize
     runs-on: ubuntu-latest
     needs: [static_analysis, container_and_sca_scan]
     steps:
-      - name: Download Reports
+      - name: Download All Reports
         uses: actions/download-artifact@v4
         with:
-          name: trivy-reports
           path: reports
+
+      - name: Print Report Files
+        run: ls -R reports
 
       - name: Check for HIGH or CRITICAL Vulnerabilities
         id: check_vulns
         run: |
-          high_critical_count=$(grep -iE 'HIGH|CRITICAL' reports/*.csv | wc -l)
-          echo "VULN_COUNT=$high_critical_count" >> $GITHUB_ENV
+          total=$(jq '[.[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' reports/trivy-reports/trivy_image.json)
+          total_fs=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' reports/trivy-reports/trivy_fs.json)
+          echo "Found $total + $total_fs critical vulnerabilities"
+          total_count=$((total + total_fs))
+          echo "VULN_COUNT=$total_count" >> $GITHUB_ENV
 
       - name: Fail if High/Critical vulnerabilities found
         if: env.VULN_COUNT != '0'
