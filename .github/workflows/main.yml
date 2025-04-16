@@ -59,7 +59,7 @@ jobs:
 
       - name: Build Docker image manually
         run: |
-          docker build flask-app
+          docker composer build flask-app
           docker tag $(docker compose images -q flask-app) flask-app:latest
 
       - name: Scan Docker image
