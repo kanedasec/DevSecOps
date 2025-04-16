@@ -58,7 +58,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Build Docker image manually
-        run: docker build -t flask-app -f docker/flask.Dockerfile .
+        run: docker compose build -t flask-app
 
       - name: Scan Docker image
         run: |
