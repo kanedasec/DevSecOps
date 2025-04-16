@@ -2,8 +2,8 @@
 name: Full Security Pipeline
 
 on:
-  # # push:
-  # #   branches: [main]
+  # push:
+  #   branches: [main]
   # pull_request:
   #   branches: [main]
   workflow_dispatch:
@@ -58,7 +58,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Build Docker image manually
-        run: docker compose build flask-app
+        run: |
+          docker build flask-app
+          docker tag $(docker compose images -q flask-app) flask-app:latest
 
       - name: Scan Docker image
         run: |
