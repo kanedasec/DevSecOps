@@ -90,7 +90,7 @@ jobs:
       - name: Print Report Files
         run: ls -R reports
 
-        - name: Check for HIGH or CRITICAL Vulnerabilities
+      - name: Check for HIGH or CRITICAL Vulnerabilities
         id: check_vulns
         run: |
           set -e
