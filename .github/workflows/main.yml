@@ -55,13 +55,16 @@ jobs:
         run: |
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
           sudo mv ./bin/trivy /usr/local/bin/trivy
+      
+      - name: Install dependencies (for Trivy FS)
+        run: pip install -r requirements.txt
 
       - name: Build Docker image
         run: docker compose build flask-app
 
       - name: Scan Docker image
         run: |
-          trivy image --format json --output trivy_image.json --severity HIGH,CRITICAL flask_app || true
+          trivy image --format json --output trivy_image.json --severity HIGH,CRITICAL flask-app || true
 
       - name: Scan filesystem (SCA)
         run: |
@@ -88,9 +91,18 @@ jobs:
       - name: Print Report Files
         run: ls -R reports
 
-      - name: Check for HIGH or CRITICAL Vulnerabilities
+        - name: Check for HIGH or CRITICAL Vulnerabilities
         id: check_vulns
         run: |
+          if [ ! -f reports/trivy-reports/trivy_image.json ]; then
+            echo "Trivy image report not found. Failing."
+            exit 1
+          fi
+          if [ ! -f reports/trivy-reports/trivy_fs.json ]; then
+            echo "Trivy FS report not found. Failing."
+            exit 1
+          fi
+      
           total=$(jq '[.[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' reports/trivy-reports/trivy_image.json)
           total_fs=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' reports/trivy-reports/trivy_fs.json)
           echo "Found $total + $total_fs critical vulnerabilities"
