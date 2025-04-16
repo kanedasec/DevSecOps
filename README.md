@@ -31,6 +31,8 @@ docker compose up --build
 ### ✅ Application Security
 - [x] Input validation (Flask routes)
 - [x] WAF protection (Nginx + ModSecurity + OWASP CRS)
+- [x] Security Headers enforced by NGINX
+- [x] HTTPS only
 
 ### ✅ Pipeline Security (CI)
 - [x] SAST via Semgrep & Bandit
