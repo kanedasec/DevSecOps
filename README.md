@@ -29,19 +29,19 @@ docker compose up --build
 ## 🧪 Security Coverage
 
 ### ✅ Repository Security
-- [] Secrets Configuration
-- [] Pull Requests Review
-- [] Dependabots Alert
+- [ ] Secrets Configuration
+- [ ] Pull Requests Review
+- [ ] Dependabots Alert
 
 ### ✅ Design Security
-- [] Threat Modelling
+- [ ] Threat Modelling
 
 ### ✅ Application Security
-- [] Input validation (Flask routes)
+- [ ] Input validation (Flask routes)
 - [x] WAF protection (Nginx + ModSecurity + OWASP CRS)
 - [x] Security Headers enforced by NGINX
 - [x] HTTPS only
-- [] CSRFGuard
+- [ ] CSRFGuard
 
 ### ✅ Automated Security (CI)
 - [x] SAST via Semgrep Bandit
@@ -49,7 +49,7 @@ docker compose up --build
 - [x] SAST via SonarCloud
 - [x] SAST via Github Code Security
 - [x] SCA & container image scan via Trivy
-- [] Secrets scan via Gitleaks
+- [ ] Secrets scan via Gitleaks
 - [x] DAST via ZAP
 ---
 
