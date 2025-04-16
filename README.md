@@ -28,6 +28,11 @@ docker compose up --build
 
 ## 🧪 Security Coverage
 
+### ✅ Repository Security
+- [] Secrets Configuration
+- [] Pull Requests Review
+- [] Dependabots Alert
+
 ### ✅ Design Security
 - [] Threat Modelling
 
@@ -39,7 +44,10 @@ docker compose up --build
 - [] CSRFGuard
 
 ### ✅ Automated Security (CI)
-- [x] SAST via Semgrep & Bandit
+- [x] SAST via Semgrep Bandit
+- [x] SAST via Bandit
+- [x] SAST via SonarCloud
+- [x] SAST via Github Code Security
 - [x] SCA & container image scan via Trivy
 - [] Secrets scan via Gitleaks
 - [x] DAST via ZAP
