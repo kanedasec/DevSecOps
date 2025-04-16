@@ -28,16 +28,20 @@ docker compose up --build
 
 ## 🧪 Security Coverage
 
+### ✅ Design Security
+- [] Threat Modelling
+
 ### ✅ Application Security
-- [x] Input validation (Flask routes)
+- [] Input validation (Flask routes)
 - [x] WAF protection (Nginx + ModSecurity + OWASP CRS)
 - [x] Security Headers enforced by NGINX
 - [x] HTTPS only
+- [] CSRFGuard
 
-### ✅ Pipeline Security (CI)
+### ✅ Automated Security (CI)
 - [x] SAST via Semgrep & Bandit
 - [x] SCA & container image scan via Trivy
-- [x] Secrets scan via Gitleaks
+- [] Secrets scan via Gitleaks
 - [x] DAST via ZAP
 ---
 
