@@ -10,7 +10,7 @@ A hands-on lab to test pipeline security and application security techniques usi
 - Nginx
 - ModSecurity (OWASP CRS)
 - Docker & Docker Compose
-- CI tools (Semgrep, Bandit, Trivy)
+- CI tools (Semgrep, Bandit, Trivy, ZAP)
 
 ---
 
@@ -22,7 +22,7 @@ docker compose up --build
 ```
 
 ### App entry point
-- Web UI: http://localhost
+- Web UI: https://localhost
 
 ---
 
@@ -35,8 +35,8 @@ docker compose up --build
 ### ✅ Pipeline Security (CI)
 - [x] SAST via Semgrep & Bandit
 - [x] SCA & container image scan via Trivy
-- [x] Secrets scan via Gitleaks (optional)
-
+- [x] Secrets scan via Gitleaks
+- [x] DAST via ZAP
 ---
 
 ## 🧰 CI/CD Configuration (GitHub Actions)
@@ -56,50 +56,6 @@ app/
     ├── admin.html
     └── register.html
 ```
-
----
-
-## 🧱 Docker Layout
-
-### docker-compose.yml
-```yaml
-services:
-  flask-app:
-    build:
-      context: .
-      dockerfile: docker/flask.Dockerfile
-    container_name: flask_app
-    expose:
-      - "5000"
-
-  nginx_waf:
-    build:
-      context: .
-      dockerfile: docker/nginx.Dockerfile
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - flask-app
-```
-
-### docker/flask.Dockerfile
-```Dockerfile
-FROM python:3.11-slim
-WORKDIR /mock-app
-COPY . /mock-app
-RUN pip install --no-cache-dir -r requirements.txt
-EXPOSE 5000
-CMD ["python", "main.py"]
-```
-
-### docker/nginx.Dockerfile
-```Dockerfile
-FROM owasp/modsecurity-crs:nginx
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-```
-
 ---
 
 ## ✍️ Contributions

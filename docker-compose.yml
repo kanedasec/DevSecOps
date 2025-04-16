@@ -13,7 +13,7 @@ services:
   nginx_waf:
     image: owasp/modsecurity-crs:nginx
     ports:
-      - "80:80"
+      # - "80:80"
       - "443:443"
     volumes:
       - ./nginx/default.conf:/etc/nginx/templates/conf.d/default.conf.template
