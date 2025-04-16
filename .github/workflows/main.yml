@@ -102,7 +102,7 @@ jobs:
             exit 1
           fi
 
-          total=$(jq '[.[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$image_file")
+          total=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$image_file")
           total_fs=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$fs_file")
           echo "Found $total (image) + $total_fs (fs) HIGH/CRITICAL vulnerabilities"
           total_count=$((total + total_fs))
