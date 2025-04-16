@@ -90,20 +90,21 @@ jobs:
       - name: Print Report Files
         run: ls -R reports
 
-      - name: Check for HIGH or CRITICAL Vulnerabilities
+        - name: Check for HIGH or CRITICAL Vulnerabilities
         id: check_vulns
         run: |
           set -e
           image_file="reports/trivy-reports/trivy_image.json"
           fs_file="reports/trivy-reports/trivy_fs.json"
-
+      
           if [ ! -f "$image_file" ] || [ ! -f "$fs_file" ]; then
             echo "❌ One or more Trivy reports are missing."
             exit 1
           fi
-
-          total=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$image_file")
-          total_fs=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$fs_file")
+      
+          total=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$image_file")
+          total_fs=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$fs_file")
+      
           echo "Found $total (image) + $total_fs (fs) HIGH/CRITICAL vulnerabilities"
           total_count=$((total + total_fs))
           echo "VULN_COUNT=$total_count" >> $GITHUB_ENV
