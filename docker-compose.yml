@@ -1,0 +1,23 @@
+
+version: '3.8'
+
+services:
+  flask-app:
+    build:
+      context: .
+      dockerfile: docker/flask.dockerfile
+    container_name: flask_app
+    expose:
+      - "5000"
+
+  nginx_waf:
+    image: owasp/modsecurity-crs:nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/templates/conf.d/default.conf.template
+      - ./nginx/modsecurity.conf:/etc/modsecurity/modsecurity.conf
+      - ./nginx/modsecurity-crs:/etc/modsecurity-crs
+    depends_on:
+      - flask-app

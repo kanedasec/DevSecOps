@@ -1,0 +1,27 @@
+
+name: OWASP ZAP DAST Scan
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start the application stack
+        run: |
+          docker compose up -d --build
+          sleep 15  # Wait for the app and Nginx WAF to be ready
+
+      - name: Run OWASP ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.9.0
+        with:
+          target: 'http://localhost'
+          fail_action: false
+          rules_file_name: '.zap/rules.tsv'
+
+      - name: Shutdown
+        run: docker compose down --volumes
