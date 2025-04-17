@@ -5,15 +5,15 @@ on:
 
 jobs:
   Secrets-Scan:
-    uses: ./Gitleaks-secret.yml@main
+    uses: .github/workflow/Gitleaks-secret.yml@main
 
   static-analysis:
-    uses: ./static-analysis.yml@main
+    uses: .github/workflow/static-analysis.yml@main
 
   trivy-scan:
-    uses: ./.github/workflow/trivy-Container-scan.yml@main
+    uses: .github/workflow/trivy-Container-scan.yml@main
     needs: static-analysis
 
   evaluate:
-    uses: ./evaluate-results.yml@main
+    uses: .github/workflow/evaluate-results.yml@main
     needs: trivy-scan
