@@ -122,7 +122,39 @@ jobs:
           echo "🧠 Semgrep:                   $semgrep_count WARNING/ERROR"
           echo "========================================================="
           echo ""
-        
+      
+      - name: 🗂️ Convert JSON Reports to CSV
+        run: |
+          mkdir -p reports/csv
+      
+          # Convert Trivy (Docker Image)
+          jq -r '
+            [.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] |
+              {Target: .PkgName, Severity, Title, VulnerabilityID}
+            ] | (first | keys_unsorted), (.[] | [.[]])
+          ' reports/trivy-reports/trivy_image.json > reports/csv/trivy_image.csv || echo "No image CSV generated"
+      
+          # Convert Trivy (Filesystem / SCA)
+          jq -r '
+            [.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] |
+              {Target: .PkgName, Severity, Title, VulnerabilityID}
+            ] | (first | keys_unsorted), (.[] | [.[]])
+          ' reports/trivy-reports/trivy_fs.json > reports/csv/trivy_fs.csv || echo "No fs CSV generated"
+      
+          # Convert Bandit
+          jq -r '
+            [.results[] |
+              {Filename: .filename, Severity: .issue_severity, Confidence: .issue_confidence, Text: .issue_text}
+            ] | (first | keys_unsorted), (.[] | [.[]])
+          ' reports/static-analysis-reports/bandit_results.json > reports/csv/bandit.csv || echo "No bandit CSV generated"
+      
+          # Convert Semgrep
+          jq -r '
+            [.results[] |
+              {CheckID: .check_id, Message: .extra.message, Severity: .extra.severity, Path: .path}
+            ] | (first | keys_unsorted), (.[] | [.[]])
+          ' reports/static-analysis-reports/semgrep_results.json > reports/csv/semgrep.csv || echo "No semgrep CSV generated"
+            
       - name: 📦 Upload Final Report Bundle
         uses: actions/upload-artifact@v4
         with:
