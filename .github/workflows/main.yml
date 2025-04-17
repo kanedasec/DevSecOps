@@ -108,6 +108,12 @@ jobs:
           total_count=$((total + total_fs))
           echo "VULN_COUNT=$total_count" >> $GITHUB_ENV
 
+      - name: 📦 Upload Final Report Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-reports
+          path: reports/      
+
       - name: Fail if High/Critical vulnerabilities found
         if: env.VULN_COUNT != '0'
         run: |
@@ -117,3 +123,5 @@ jobs:
       - name: Success message
         if: env.VULN_COUNT == '0'
         run: echo "✅ Everything is in place to go to PROD"
+      
+      
