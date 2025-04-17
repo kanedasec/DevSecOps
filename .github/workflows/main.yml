@@ -12,7 +12,7 @@ jobs:
     uses: kanedasec/DevSecOps/.github/workflows/static-analysis.yml@main
 
   trivy-scan:
-    uses: kanedasec/DevSecOps/.github/workflows/trivy-scan.yml@main
+    uses: kanedasec/DevSecOps/.github/workflows/trivy-Container-scan.yml@main
     needs: static-analysis
 
   evaluate:
