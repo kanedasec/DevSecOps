@@ -49,8 +49,8 @@ docker compose up --build
 - [ ] SAST via SonarCloud
 - [x] SAST via Github Code Security
 - [x] SCA & container image scan via Trivy
-- [ ] Secrets scan via Gitleaks
-- [ ] DAST via ZAP
+- [x] Secrets scan via Gitleaks
+- [x] DAST via ZAP
 ---
 
 ## 🧰 CI/CD Configuration (GitHub Actions)

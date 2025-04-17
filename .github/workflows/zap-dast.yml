@@ -22,7 +22,7 @@ jobs:
           target: 'https://localhost'
           fail_action: false
           allow_issue_writing: false
-          artifact_name: zapsan
+          artifact_name: zap-san
 
       - name: 📆 Upload ZAP Reports manually
         uses: actions/upload-artifact@v4
