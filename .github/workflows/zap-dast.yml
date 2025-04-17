@@ -21,8 +21,9 @@ jobs:
         with:
           target: 'https://localhost'
           fail_action: false
-          artifact_name: zap_scan
+          artifact_name: zap-scan
           allow_issue_writing: false
+          allow_file_writing: false
 
       - name: Shutdown
         run: docker compose down --volumes
