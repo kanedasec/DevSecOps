@@ -21,7 +21,16 @@ jobs:
         with:
           target: 'https://localhost'
           fail_action: false
-          rules_file_name: '.zap/rules.tsv'
 
       - name: Shutdown
         run: docker compose down --volumes
+      
+      - name: 📦 Upload ZAP Scan Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-reports
+          path: |
+            report_json.json
+            report_md.md
+            report_html.html
+      
