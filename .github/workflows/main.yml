@@ -3,18 +3,20 @@ name: Full Security Pipeline
 on:
   workflow_dispatch:
 
+env:
+  REPO_PATH: ${{ github.repository }}
+
 jobs:
-  
   Secrets-Scan:
-    uses: kanedasec/DevSecOps/.github/workflows/Gitleaks-secret.yml@main
+    uses: ${{ env.REPO_PATH }}/.github/workflows/Gitleaks-secret.yml@main
 
   static-analysis:
-    uses: kanedasec/DevSecOps/.github/workflows/static-analysis.yml@main
+    uses: ${{ env.REPO_PATH }}/.github/workflows/static-analysis.yml@main
 
   trivy-scan:
-    uses: kanedasec/DevSecOps/.github/workflows/trivy-Container-scan.yml@main
+    uses: ${{ env.REPO_PATH }}/.github/workflows/trivy-Container-scan.yml@main
     needs: static-analysis
 
   evaluate:
-    uses: kanedasec/DevSecOps/.github/workflows/evaluate-results.yml@main
+    uses: ${{ env.REPO_PATH }}/.github/workflows/evaluate-results.yml@main
     needs: trivy-scan

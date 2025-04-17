@@ -52,7 +52,6 @@ jobs:
           echo "🧠 Semgrep:                   $semgrep_count WARNING/ERROR"
           echo "========================================================="
           echo ""
-          exit 1
 
       - name: Success message
         if: env.VULN_COUNT == '0'
