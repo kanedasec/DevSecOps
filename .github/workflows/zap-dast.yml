@@ -1,39 +1,36 @@
 
-name: DAST Scan
+name: ZAP DAST Scan
 
 on:
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   zap_scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Start the application stack
+      - name: 🚀 Start the application stack
         run: |
           docker compose up -d --build
-          sleep 15  # Wait for the app and Nginx WAF to be ready
+          sleep 15
 
-      - name: Run OWASP ZAP baseline scan
+      - name: ⚡️ Run OWASP ZAP baseline scan
         uses: zaproxy/action-baseline@v0.9.0
         with:
-          target: 'https://localhost'
+          target: 'http://localhost'
           fail_action: false
-          artifact_name: zap-scan
           allow_issue_writing: false
-          allow_file_writing: false
+          artifact_name: zapsan
 
-      - name: Shutdown
-        run: docker compose down --volumes
-      
-      - name: 📦 Upload ZAP Scan Reports
+      - name: 📆 Upload ZAP Reports manually
         uses: actions/upload-artifact@v4
         with:
-          name: zap-scan-reports
+          name: zapsan
           path: |
             report_json.json
-            report_md.md
             report_html.html
+            report_md.md
+
+      - name: 🔧 Shutdown application stack
+        run: docker compose down --volumes
+
       
