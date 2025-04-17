@@ -5,12 +5,12 @@ on:
 
 jobs:
   static-analysis:
-    uses: kanedasec/DevSecOps/.github/workflows/ci/static-analysis.yml@main
+    uses: kanedasec/DevSecOps/.github/workflows/static-analysis.yml@main
 
   trivy-scan:
-    uses: kanedasec/DevSecOps/.github/workflows/ci/trivy-scan.yml@main
+    uses: kanedasec/DevSecOps/.github/workflows/trivy-scan.yml@main
     needs: static-analysis
 
   evaluate:
-    uses: kanedasec/DevSecOps/.github/workflows/ci/evaluate-results.yml@main
+    uses: kanedasec/DevSecOps/.github/workflows/evaluate-results.yml@main
     needs: trivy-scan
