@@ -6,7 +6,6 @@ jobs:
   evaluate_results:
     name: ✅ Evaluate and Finalize
     runs-on: ubuntu-latest
-    needs: [static_analysis, container_and_sca_scan]
     steps:
       - name: Download All Reports
         uses: actions/download-artifact@v4
@@ -34,8 +33,16 @@ jobs:
           echo "TOTAL_FS_VULNS=$total_fs" >> $GITHUB_ENV
           echo "VULN_COUNT=$total_count" >> $GITHUB_ENV
       
-      - name: 📊 Summarize Vulnerabilities by Scan
+      - name: 📦 Upload Final Report Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-reports
+          path: reports/      
+
+      - name: Fail if High/Critical vulnerabilities found
+        if: env.VULN_COUNT != '0'
         run: |
+          echo "❌ Please correct all High and Critical Vulnerabilities to move to PROD"
           echo ""
           echo "==================== 🔎 Scan Summary ===================="
           echo "🐳 Trivy (Docker Image):      $TOTAL_IMAGE_VULNS HIGH/CRITICAL"
@@ -48,17 +55,6 @@ jobs:
           echo "🧠 Semgrep:                   $semgrep_count WARNING/ERROR"
           echo "========================================================="
           echo ""
-      
-      - name: 📦 Upload Final Report Bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-scan-reports
-          path: reports/      
-
-      - name: Fail if High/Critical vulnerabilities found
-        if: env.VULN_COUNT != '0'
-        run: |
-          echo "❌ Please correct all High and Critical Vulnerabilities to move to PROD"
           exit 1
 
       - name: Success message
