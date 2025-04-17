@@ -1,5 +1,5 @@
 
-name: OWASP ZAP DAST Scan
+name: DAST Scan
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Start the application stack
         run: |
           docker compose up -d --build

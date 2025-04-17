@@ -6,7 +6,7 @@ on:
 jobs:
   
   Secrets-Scan:
-    uses: kanedasec/DevSecOps/.github/workflows/Gitleaks-secret.yml@main
+    uses: kanedasec/DevSecOps/ci/Gitleaks-secret.yml@main
 
   static-analysis:
     uses: kanedasec/DevSecOps/.github/workflows/static-analysis.yml@main
