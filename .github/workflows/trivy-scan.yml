@@ -7,7 +7,6 @@ jobs:
   container_and_sca_scan:
     name: 🐳 Container & Dependency Scan (Trivy)
     runs-on: ubuntu-latest
-    needs: static_analysis
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
