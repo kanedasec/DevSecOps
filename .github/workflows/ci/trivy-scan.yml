@@ -1,0 +1,40 @@
+
+name: Public Container Image Security
+on:
+  workflow_call:
+
+container_and_sca_scan:
+    name: 🐳 Container & Dependency Scan (Trivy)
+    runs-on: ubuntu-latest
+    needs: static_analysis
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+          sudo mv ./bin/trivy /usr/local/bin/trivy
+
+      - name: Install dependencies (for Trivy FS scan)
+        run: pip install -r requirements.txt
+
+      - name: Build Docker image manually
+        run: |
+          docker build -t flask-app:latest -f docker/flask.dockerfile .
+
+      - name: Scan Docker image
+        run: |
+          trivy image --format json --output trivy_image.json --severity HIGH,CRITICAL flask-app || true
+
+      - name: Scan filesystem (SCA)
+        run: |
+          trivy fs --format json --output trivy_fs.json --scanners vuln,license,secret --severity HIGH,CRITICAL . || true
+
+      - name: Upload Trivy Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: |
+            trivy_image.json
+            trivy_fs.json
