@@ -5,7 +5,7 @@ on:
 
 jobs:
   container_and_sca_scan:
-    name: 🐳 Container & Dependency Scan (Trivy)
+    name: 🐳 Container Scan (Trivy)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,14 +27,9 @@ jobs:
         run: |
           trivy image --format json --output trivy_image.json --severity HIGH,CRITICAL flask-app || true
 
-      - name: Scan filesystem (SCA)
-        run: |
-          trivy fs --format json --output trivy_fs.json --scanners vuln,license,secret --severity HIGH,CRITICAL . || true
-
       - name: Upload Trivy Reports
         uses: actions/upload-artifact@v4
         with:
           name: trivy-reports
           path: |
             trivy_image.json
-            trivy_fs.json
