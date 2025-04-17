@@ -51,11 +51,20 @@ jobs:
           else
             echo "No Semgrep report found"
           fi
+      
+      - name: Parse Gitleaks Report
+        run: |
+          gitleaks_file="reports/gitleaks-report/gitleaks.json"
+          if [ -f "$gitleaks_file" ]; then
+            jq -r '.[] | ["Gitleaks", .RuleID, "HIGH", .Description] | @csv' "$gitleaks_file" >> $FINAL_CSV
+          else
+            echo "No Gitleaks report found"
+          fi
 
       - name: Show Summary by Tool
         run: |
           echo "==================== 🔎 Scan Summary ===================="
-          for tool in Trivy Bandit Semgrep; do
+          for tool in Trivy Bandit Semgrep Gitleaks; do
             count=$(grep "^\"$tool\"" $FINAL_CSV | wc -l)
             echo "$tool: $count findings"
           done
