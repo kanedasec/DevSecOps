@@ -20,8 +20,6 @@ jobs:
         uses: zaproxy/action-baseline@v0.9.0
         with:
           target: 'https://localhost'
-          fail_action: false
-          allow_issue_writing: false
           artifact_name: zapscan_results
 
       - name: 📆 Upload ZAP Reports manually
