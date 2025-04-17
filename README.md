@@ -44,10 +44,9 @@ docker compose up --build
 - [ ] CSRFGuard
 
 ### ✅ Automated Security (CI)
-- [x] SAST via Semgrep Bandit
-- [x] SAST via Bandit
-- [ ] SAST via SonarCloud
-- [x] SAST via Github Code Security
+- [x] SAST via Semgrep for Bugs and Security
+- [x] SAST via Bandit for Security
+- [x] SAST via CodeQL for Security
 - [x] SCA & container image scan via Trivy
 - [x] Secrets scan via Gitleaks
 - [x] DAST via ZAP
