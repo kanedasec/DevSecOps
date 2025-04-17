@@ -112,8 +112,8 @@ jobs:
         run: |
           echo ""
           echo "==================== 🔎 Scan Summary ===================="
-          echo "🐳 Trivy (Docker Image):      $total HIGH/CRITICAL"
-          echo "📁 Trivy (Filesystem / SCA):  $total_fs HIGH/CRITICAL"
+          echo "🐳 Trivy (Docker Image):      ${{ env.TOTAL_IMAGE_VULNS }} HIGH/CRITICAL"
+          echo "📁 Trivy (Filesystem / SCA):  ${{ env.TOTAL_FS_VULNS }} HIGH/CRITICAL"
       
           bandit_count=$(jq '[.results[] | select(.issue_severity == "HIGH" or .issue_severity == "MEDIUM")] | length' reports/static-analysis-reports/bandit_results.json 2>/dev/null || echo 0)
           semgrep_count=$(jq '[.results[] | select(.extra.severity == "ERROR" or .extra.severity == "WARNING")] | length' reports/static-analysis-reports/semgrep_results.json 2>/dev/null || echo 0)
@@ -122,7 +122,6 @@ jobs:
           echo "🧠 Semgrep:                   $semgrep_count WARNING/ERROR"
           echo "========================================================="
           echo ""
-          echo "SCAN_SUMMARY=ok" >> $GITHUB_ENV
 
       - name: 📦 Upload Final Report Bundle
         uses: actions/upload-artifact@v4
