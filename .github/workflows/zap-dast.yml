@@ -1,5 +1,5 @@
 
-name: ZAP DAST Scan
+name: Dynamic Analisys
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ jobs:
       - name: ⚡️ Run OWASP ZAP baseline scan
         uses: zaproxy/action-baseline@v0.9.0
         with:
-          target: 'http://localhost'
+          target: 'https://localhost'
           fail_action: false
           allow_issue_writing: false
           artifact_name: zapsan
