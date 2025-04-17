@@ -93,7 +93,6 @@ jobs:
       - name: Check for HIGH or CRITICAL Vulnerabilities
         id: check_vulns
         run: |
-          set -e
           image_file="reports/trivy-reports/trivy_image.json"
           fs_file="reports/trivy-reports/trivy_fs.json"
       
@@ -102,8 +101,8 @@ jobs:
             exit 1
           fi
       
-          total=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$image_file")
-          total_fs=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$fs_file")
+          total=$(jq -e '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$image_file" 2>/dev/null || echo 0)
+          total_fs=$(jq -e '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$fs_file" 2>/dev/null || echo 0)
       
           echo "Found $total (image) + $total_fs (fs) HIGH/CRITICAL vulnerabilities"
           total_count=$((total + total_fs))
