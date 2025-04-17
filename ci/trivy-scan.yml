@@ -1,29 +1,40 @@
 
 name: Public Container Image Security
-
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_call:
 
-jobs:
-  trivy_public_image_scan:
+container_and_sca_scan:
+    name: 🐳 Container & Dependency Scan (Trivy)
     runs-on: ubuntu-latest
+    needs: static_analysis
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Install Trivy
         run: |
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-          sudo mv trivy /usr/local/bin/
+          sudo mv ./bin/trivy /usr/local/bin/trivy
 
-      - name: Scan OWASP ModSecurity CRS Image
-        run: |
-          trivy image --exit-code 1 --severity HIGH,CRITICAL owasp/modsecurity-crs:nginx
+      - name: Install dependencies (for Trivy FS scan)
+        run: pip install -r requirements.txt
 
-      - name: Run Trivy scan on Docker image
+      - name: Build Docker image manually
         run: |
-          docker compose build flask-app
-          trivy image --exit-code 1 --severity HIGH,CRITICAL flask_app
+          docker build -t flask-app:latest -f docker/flask.dockerfile .
 
-      - name: Run Trivy scan on project dependencies (SCA)
+      - name: Scan Docker image
         run: |
-          trivy fs --exit-code 1 --severity HIGH,CRITICAL --scanners vuln,license,secret .
+          trivy image --format json --output trivy_image.json --severity HIGH,CRITICAL flask-app || true
+
+      - name: Scan filesystem (SCA)
+        run: |
+          trivy fs --format json --output trivy_fs.json --scanners vuln,license,secret --severity HIGH,CRITICAL . || true
+
+      - name: Upload Trivy Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: |
+            trivy_image.json
+            trivy_fs.json

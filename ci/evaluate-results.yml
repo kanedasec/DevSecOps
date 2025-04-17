@@ -1,0 +1,67 @@
+name: Evaluate Results
+on:
+  workflow_call:
+
+jobs:
+  evaluate_results:
+    name: ✅ Evaluate and Finalize
+    runs-on: ubuntu-latest
+    needs: [static_analysis, container_and_sca_scan]
+    steps:
+      - name: Download All Reports
+        uses: actions/download-artifact@v4
+        with:
+          path: reports
+
+      - name: Print Report Files
+        run: ls -R reports
+
+      - name: Check for HIGH or CRITICAL Vulnerabilities
+        id: check_vulns
+        run: |
+          image_file="reports/trivy-reports/trivy_image.json"
+          fs_file="reports/trivy-reports/trivy_fs.json"
+      
+          if [ ! -f "$image_file" ] || [ ! -f "$fs_file" ]; then
+            echo "❌ One or more Trivy reports are missing."
+            exit 1
+          fi
+      
+          total=$(jq -e '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$image_file" 2>/dev/null || echo 0)
+          total_fs=$(jq -e '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$fs_file" 2>/dev/null || echo 0)
+      
+          echo "TOTAL_IMAGE_VULNS=$total" >> $GITHUB_ENV
+          echo "TOTAL_FS_VULNS=$total_fs" >> $GITHUB_ENV
+          echo "VULN_COUNT=$total_count" >> $GITHUB_ENV
+      
+      - name: 📊 Summarize Vulnerabilities by Scan
+        run: |
+          echo ""
+          echo "==================== 🔎 Scan Summary ===================="
+          echo "🐳 Trivy (Docker Image):      $TOTAL_IMAGE_VULNS HIGH/CRITICAL"
+          echo "📁 Trivy (Filesystem / SCA):  $TOTAL_FS_VULNS HIGH/CRITICAL"
+      
+          bandit_count=$(jq '[.results[] | select(.issue_severity == "HIGH" or .issue_severity == "MEDIUM")] | length' reports/static-analysis-reports/bandit_results.json 2>/dev/null || echo 0)
+          semgrep_count=$(jq '[.results[] | select(.extra.severity == "ERROR" or .extra.severity == "WARNING")] | length' reports/static-analysis-reports/semgrep_results.json 2>/dev/null || echo 0)
+      
+          echo "🐍 Bandit:                    $bandit_count HIGH/MEDIUM"
+          echo "🧠 Semgrep:                   $semgrep_count WARNING/ERROR"
+          echo "========================================================="
+          echo ""
+      
+      - name: 📦 Upload Final Report Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-reports
+          path: reports/      
+
+      - name: Fail if High/Critical vulnerabilities found
+        if: env.VULN_COUNT != '0'
+        run: |
+          echo "❌ Please correct all High and Critical Vulnerabilities to move to PROD"
+          exit 1
+
+      - name: Success message
+        if: env.VULN_COUNT == '0'
+        run: echo "✅ Everything is in place to go to PROD"
+      

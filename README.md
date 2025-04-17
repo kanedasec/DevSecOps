@@ -46,11 +46,11 @@ docker compose up --build
 ### ✅ Automated Security (CI)
 - [x] SAST via Semgrep Bandit
 - [x] SAST via Bandit
-- [x] SAST via SonarCloud
+- [ ] SAST via SonarCloud
 - [x] SAST via Github Code Security
 - [x] SCA & container image scan via Trivy
 - [ ] Secrets scan via Gitleaks
-- [x] DAST via ZAP
+- [ ] DAST via ZAP
 ---
 
 ## 🧰 CI/CD Configuration (GitHub Actions)
