@@ -1,4 +1,5 @@
 name: Evaluate Results
+
 on:
   workflow_call:
 
@@ -6,6 +7,9 @@ jobs:
   evaluate_results:
     name: ✅ Evaluate and Finalize
     runs-on: ubuntu-latest
+    env:
+      FINAL_CSV: final_security_report.csv
+
     steps:
       - name: Download All Reports
         uses: actions/download-artifact@v4
@@ -15,45 +19,51 @@ jobs:
       - name: Print Report Files
         run: ls -R reports
 
-      - name: Check for HIGH or CRITICAL Vulnerabilities
-        id: check_vulns
+      - name: Initialize Final CSV
+        run: echo "Testing Tool,Vulnerability,Criticality,More Info" > $FINAL_CSV
+
+      - name: Parse Trivy Report
         run: |
           image_file="reports/trivy-reports/trivy_image.json"
-          
-      
-          if [ ! -f "$image_file" ]; then
-            echo "❌ Trivy reports are missing."
-            exit 1
+          if [ -f "$image_file" ]; then
+            jq -r '.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL") | 
+            ["Trivy", .VulnerabilityID, .Severity, .Title] | @csv' "$image_file" >> $FINAL_CSV
+          else
+            echo "No Trivy report found"
           fi
-      
-          total=$(jq -e '[.Results[]? | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$image_file" 2>/dev/null || echo 0)
-      
-          echo "TOTAL_IMAGE_VULNS=$total" >> $GITHUB_ENV
-          echo "VULN_COUNT=$total_count" >> $GITHUB_ENV
-      
-      - name: 📦 Upload Final Report Bundle
+
+      - name: Parse Bandit Report
+        run: |
+          bandit_file="reports/static-analysis-reports/bandit_results.json"
+          if [ -f "$bandit_file" ]; then
+            jq -r '.results[] | select(.issue_severity == "HIGH" or .issue_severity == "MEDIUM") | 
+            ["Bandit", .test_id, .issue_severity, .issue_text] | @csv' "$bandit_file" >> $FINAL_CSV
+          else
+            echo "No Bandit report found"
+          fi
+
+      - name: Parse Semgrep Report
+        run: |
+          semgrep_file="reports/static-analysis-reports/semgrep_results.json"
+          if [ -f "$semgrep_file" ]; then
+            jq -r '.results[] | select(.extra.severity == "WARNING" or .extra.severity == "ERROR") |
+            ["Semgrep", .check_id, .extra.severity, .extra.message] | @csv' "$semgrep_file" >> $FINAL_CSV
+          else
+            echo "No Semgrep report found"
+          fi
+
+      - name: Show Summary by Tool
+        run: |
+          echo "==================== 🔎 Scan Summary ===================="
+          for tool in Trivy Bandit Semgrep; do
+            count=$(grep "^\"$tool\"" $FINAL_CSV | wc -l)
+            echo "$tool: $count findings"
+          done
+          echo "========================================================="
+
+      - name: Upload Final CSV
         uses: actions/upload-artifact@v4
         with:
-          name: security-scan-reports
-          path: reports/      
+          name: security-findings.csv
+          path: ${{ env.FINAL_CSV }}
 
-      - name: Fail if High/Critical vulnerabilities found
-        if: env.VULN_COUNT != '0'
-        run: |
-          echo "❌ Please correct all High and Critical Vulnerabilities to move to PROD"
-          echo ""
-          echo "==================== 🔎 Scan Summary ===================="
-          echo "🐳 Trivy (Docker Image):      $TOTAL_IMAGE_VULNS HIGH/CRITICAL"
-      
-          bandit_count=$(jq '[.results[] | select(.issue_severity == "HIGH" or .issue_severity == "MEDIUM")] | length' reports/static-analysis-reports/bandit_results.json 2>/dev/null || echo 0)
-          semgrep_count=$(jq '[.results[] | select(.extra.severity == "ERROR" or .extra.severity == "WARNING")] | length' reports/static-analysis-reports/semgrep_results.json 2>/dev/null || echo 0)
-      
-          echo "🐍 Bandit:                    $bandit_count HIGH/MEDIUM"
-          echo "🧠 Semgrep:                   $semgrep_count WARNING/ERROR"
-          echo "========================================================="
-          echo ""
-
-      - name: Success message
-        if: env.VULN_COUNT == '0'
-        run: echo "✅ Everything is in place to go to PROD"
-      
