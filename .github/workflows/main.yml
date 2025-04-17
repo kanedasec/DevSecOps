@@ -107,6 +107,23 @@ jobs:
           echo "Found $total (image) + $total_fs (fs) HIGH/CRITICAL vulnerabilities"
           total_count=$((total + total_fs))
           echo "VULN_COUNT=$total_count" >> $GITHUB_ENV
+      
+          - name: 📊 Summarize Vulnerabilities by Scan
+          run: |
+            echo ""
+            echo "==================== 🔎 Scan Summary ===================="
+            echo "🐳 Trivy (Docker Image):      $total HIGH/CRITICAL"
+            echo "📁 Trivy (Filesystem / SCA):  $total_fs HIGH/CRITICAL"
+        
+            bandit_count=$(jq '[.results[] | select(.issue_severity == "HIGH" or .issue_severity == "MEDIUM")] | length' reports/static-analysis-reports/bandit_results.json 2>/dev/null || echo 0)
+            semgrep_count=$(jq '[.results[] | select(.extra.severity == "ERROR" or .extra.severity == "WARNING")] | length' reports/static-analysis-reports/semgrep_results.json 2>/dev/null || echo 0)
+        
+            echo "🐍 Bandit:                    $bandit_count HIGH/MEDIUM"
+            echo "🧠 Semgrep:                   $semgrep_count WARNING/ERROR"
+            echo "========================================================="
+            echo ""
+        
+            echo "SCAN_SUMMARY=ok" >> $GITHUB_ENV
 
       - name: 📦 Upload Final Report Bundle
         uses: actions/upload-artifact@v4
