@@ -4,6 +4,10 @@ name: Dynamic Analisys
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  security-events: write  # 👈 REQUIRED for uploading SARIF
+
 jobs:
   zap_scan:
     runs-on: ubuntu-latest
@@ -22,16 +26,6 @@ jobs:
           target: 'https://localhost'
           allow_issue_writing: false 
           
-
-      # - name: 📆 Upload ZAP Reports manually
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: zapsan
-      #     path: |
-      #       report_json.json
-      #       report_html.html
-            # report_md.md
-
       - name: 🔧 Shutdown application stack
         run: docker compose down --volumes
 

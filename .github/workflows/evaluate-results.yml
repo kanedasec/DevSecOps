@@ -22,6 +22,8 @@ jobs:
       - name: Initialize Final CSV
         run: echo "Testing Tool,Vulnerability,Criticality,More Info" > $FINAL_CSV
 
+# ─────────────── PARSE REPORTS FOR EACH TOOL ───────────────
+
       - name: Parse Trivy Report
         run: |
           image_file="reports/trivy-reports/trivy_image.json"
@@ -70,6 +72,8 @@ jobs:
           else
             echo "No Gitleaks report found"
           fi
+
+# ─────────────── CI SUMMARY AND UPLOAD RESULTS ───────────────
 
       - name: Show Summary by Tool
         run: |
