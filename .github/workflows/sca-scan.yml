@@ -62,15 +62,17 @@ jobs:
 
 # ─────────────── UPLOAD RESULTS ───────────────
 
-      - name: Upload Trivy scan results to GitHub Security tab
+      - name: Upload Container scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-container.sarif'
+          category: trivy-container-scan
     
-      - name: Upload Trivy scan results to GitHub Security tab
+      - name: Upload Dependency scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-dependency.sarif'
+          category: trivy-dependency-scan
 
 
       - name: Upload Trivy Reports

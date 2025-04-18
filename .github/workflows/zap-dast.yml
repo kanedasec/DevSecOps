@@ -24,7 +24,7 @@ jobs:
         uses: zaproxy/action-baseline@v0.14.0
         with:
           target: 'https://localhost'
-          allow_issue_writing: false 
+          # allow_issue_writing: false 
           
       - name: 🔧 Shutdown application stack
         run: docker compose down --volumes
