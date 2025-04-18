@@ -1,11 +1,11 @@
 
-name: Public Container Image Security
+name: Public Container Image and Dependencies Security
 on:
   workflow_call:
 
 jobs:
   container_and_sca_scan:
-    name: 🐳 Container Scan (Trivy)
+    name: 🐳 Container and Dependency Scan (Trivy)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,15 +17,25 @@ jobs:
           sudo mv ./bin/trivy /usr/local/bin/trivy
 
       - name: Install dependencies (for Trivy FS scan)
-        run: pip install -r requirements.txt
+        run:  if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Build Docker image manually
         run: |
           docker build -t flask-app:latest -f docker/flask.dockerfile .
 
       - name: Scan Docker image
+        continue-on-error: true
         run: |
           trivy image --format json --output trivy_image.json --severity HIGH,CRITICAL flask-app || true
+
+      - name: Scan Repository Dependencies
+        continue-on-error: true
+        run: |
+          trivy repository \
+            --format json \
+            --output trivy_repository_scan.json \
+            --severity HIGH,CRITICAL \
+            ${{ github.repositoryUrl }} | || true
 
       - name: Upload Trivy Reports
         uses: actions/upload-artifact@v4
@@ -33,3 +43,4 @@ jobs:
           name: trivy-reports
           path: |
             trivy_image.json
+            trivy_repository_scan.json
