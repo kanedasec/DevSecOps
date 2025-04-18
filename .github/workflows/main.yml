@@ -10,10 +10,10 @@ jobs:
   Static-Analysis:
     uses: ./.github/workflows/static-analysis.yml
 
-  Container-Dependecy-Scan:
-    uses: ./.github/workflows/trivy-Container-scan.yml
+  Dependency-Scan:
+    uses: ./.github/workflows/sca-scan.yml
     needs: Static-Analysis
 
   Evaluate-Findings:
     uses: ./.github/workflows/evaluate-results.yml
-    needs: Container-Dependecy-Scan
+    needs: Dependency-Scan

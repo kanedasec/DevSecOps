@@ -31,7 +31,17 @@ jobs:
           else
             echo "No Trivy report found"
           fi
-
+      
+      - name: Parse Trivy Repository Scan Report
+        run: |
+          repo_file="reports/trivy-reports/trivy_repository_scan.json"
+          if [ -f "$repo_file" ]; then
+            jq -r '.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL") | 
+            ["Trivy (Repo)", .VulnerabilityID, .Severity, .Title] | @csv' "$repo_file" >> $FINAL_CSV
+          else
+            echo "No Trivy repository scan report found"
+          fi
+      
       - name: Parse Bandit Report
         run: |
           bandit_file="reports/static-analysis-reports/bandit_results.json"
@@ -64,7 +74,7 @@ jobs:
       - name: Show Summary by Tool
         run: |
           echo "==================== 🔎 Scan Summary ===================="
-          for tool in Trivy Bandit Semgrep Gitleaks; do
+          for tool in "Trivy (Image)" "Trivy (Repo)" "Bandit" "Semgrep" "Gitleaks"; do
             count=$(grep "^\"$tool\"" $FINAL_CSV | wc -l)
             echo "$tool: $count findings"
           done
