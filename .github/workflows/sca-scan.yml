@@ -35,7 +35,7 @@ jobs:
             --format json \
             --output trivy_repository_scan.json \
             --severity HIGH,CRITICAL \
-            ${{ github.repositoryUrl }} || true
+            github.com/kanedasec/DevSecOps || true
 
       - name: Upload Trivy Reports
         uses: actions/upload-artifact@v4
