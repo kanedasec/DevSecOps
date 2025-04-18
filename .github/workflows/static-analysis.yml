@@ -22,7 +22,7 @@ jobs:
 
       - name: Install tools
         run: |
-          pip install bandit semgrep sarif-tools
+          pip install bandit semgrep bandit-sarif-formatter
 
 # ─────────────── BANDIT SCAN ───────────────
 
