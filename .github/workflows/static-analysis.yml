@@ -20,13 +20,19 @@ jobs:
         run: |
           pip install bandit semgrep
 
+# ─────────────── BANDIT SCAN ───────────────
+
       - name: Run Bandit
         run: |
           bandit -r app -f json -o bandit_results.json || true
 
+# ─────────────── SEMGREP SCAN ───────────────
+
       - name: Run Semgrep manually to file
         run: |
           semgrep scan --config p/ci --json > semgrep_results.json || true
+
+# ─────────────── UPLOAD RESULTS ───────────────
 
       - name: Upload Static Analysis Reports
         uses: actions/upload-artifact@v4
