@@ -32,7 +32,7 @@ jobs:
       
       - name: Convert Bandit JSON to SARIF
         run: |
-          curl -sSL https://raw.githubusercontent.com/pipeline-security/python-bandit2sarif/main/bandit2sarif.py -o bandit2sarif.py
+          curl -sSL https://raw.githubusercontent.com/secureCodeBox/bandit-sarif/main/bandit2sarif.py -o bandit2sarif.py
           python bandit2sarif.py bandit_results.json bandit_results.sarif
 
 # ─────────────── SEMGREP SCAN ───────────────
