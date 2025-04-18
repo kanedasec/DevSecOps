@@ -15,50 +15,51 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Run Trivy vulnerability scanner in repo mode
+      - name: Trivy Repo - Sarif
         uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: 'fs'
           ignore-unfixed: true
           format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL'
+          output: 'trivy-dependency.sarif'
+          severity: 'CRITICAL, HIGH'
+      
+      - name: Trivy Repo - JSON
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'json'
+          output: 'trivy-dependency.json'
+          severity: 'CRITICAL, HIGH'
+
+      - name: Trivy Container - Sarif
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'image'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-container.sarif'
+          severity: 'CRITICAL, HIGH'
+        
+      - name: Trivy Container  - JSON
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'image'
+          ignore-unfixed: true
+          format: 'json'
+          output: 'trivy-container.json'
+          severity: 'CRITICAL, HIGH'
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
 
-      # - name: Install Trivy
-      #   run: |
-      #     curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-      #     sudo mv ./bin/trivy /usr/local/bin/trivy
-
-      # - name: Install dependencies (for Trivy FS scan)
-      #   run:  if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      # - name: Build Docker image manually
-      #   run: |
-      #     docker build -t flask-app:latest -f docker/flask.dockerfile .
-
-      # - name: Scan Docker image
-      #   continue-on-error: true
-      #   run: |
-      #     trivy image --format json --output trivy_image.json --severity HIGH,CRITICAL flask-app || true
-
-      # - name: Scan Repository Dependencies
-      #   continue-on-error: true
-      #   run: |
-      #     trivy repository \
-      #       --format json \
-      #       --output trivy_repository_scan.json \
-      #       --severity HIGH,CRITICAL \
-      #       github.com/kanedasec/DevSecOps || true
-
-      # - name: Upload Trivy Reports
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: trivy-reports
-      #     path: |
-      #       trivy_image.json
-      #       trivy_repository_scan.json
+      - name: Upload Trivy Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: |
+            trivy_image.json
+            trivy_repository_scan.json
