@@ -29,11 +29,7 @@ jobs:
       - name: Run Bandit
         run: |
           bandit -r app -f json -o bandit_results.json || true
-      
-      - name: Convert Bandit JSON to SARIF
-        run: |
-          curl -sSL https://raw.githubusercontent.com/secureCodeBox/sarif-tools/main/bandit/bandit2sarif.py -o ./bandit2sarif.py
-          python3 bandit2sarif.py bandit_results.json > bandit_results.sarif
+          bandit -r app -f sarif -o bandit_results.sarif || true
 
 # ─────────────── SEMGREP SCAN ───────────────
 
