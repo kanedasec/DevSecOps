@@ -80,5 +80,5 @@ jobs:
         with:
           name: trivy-reports
           path: |
-            trivy_container.json
-            trivy_dependency.json
+            trivy-container.json
+            trivy-dependency.json
