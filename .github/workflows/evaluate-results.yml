@@ -20,36 +20,42 @@ jobs:
         run: ls -R reports
 
       - name: Initialize Final CSV
-        run: echo "Testing Tool,Vulnerability,Criticality,More Info" > $FINAL_CSV
+        run: echo "Testing Tool,Vulnerability,Criticality,More Info,Location" > $FINAL_CSV
 
 # ─────────────── PARSE REPORTS FOR EACH TOOL ───────────────
 
       - name: Parse Trivy Report
         run: |
-          image_file="reports/trivy-reports/trivy_image.json"
+          image_file="reports/trivy-reports/trivy-container.json"
           if [ -f "$image_file" ]; then
-            jq -r '.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL") | 
-            ["Trivy", .VulnerabilityID, .Severity, .Title] | @csv' "$image_file" >> $FINAL_CSV
+            jq -r '.Results[]?.Vulnerabilities[]? | 
+              select(.Severity == "HIGH" or .Severity == "CRITICAL") |
+              ["Trivy (Image)", .VulnerabilityID, .Severity, (.Title // "n/a"), (.PrimaryURL // "N/A")] | @csv' \
+              "$image_file" >> $FINAL_CSV
           else
-            echo "No Trivy report found"
+            echo "No Trivy container report found"
           fi
-      
+
       - name: Parse Trivy Repository Scan Report
         run: |
-          repo_file="reports/trivy-reports/trivy_repository_scan.json"
+          repo_file="reports/trivy-reports/trivy-dependency.json"
           if [ -f "$repo_file" ]; then
-            jq -r '.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL") | 
-            ["Trivy (Repo)", .VulnerabilityID, .Severity, .Title] | @csv' "$repo_file" >> $FINAL_CSV
+            jq -r '.Results[]?.Vulnerabilities[]? | 
+              select(.Severity == "HIGH" or .Severity == "CRITICAL") |
+              ["Trivy (Repo)", .VulnerabilityID, .Severity, (.Title // "n/a"), .PkgName] | @csv' \
+              "$repo_file" >> $FINAL_CSV
           else
             echo "No Trivy repository scan report found"
           fi
-      
+
       - name: Parse Bandit Report
         run: |
           bandit_file="reports/static-analysis-reports/bandit_results.json"
           if [ -f "$bandit_file" ]; then
-            jq -r '.results[] | select(.issue_severity == "HIGH" or .issue_severity == "MEDIUM") | 
-            ["Bandit", .test_id, .issue_severity, .issue_text] | @csv' "$bandit_file" >> $FINAL_CSV
+            jq -r '.results[] | 
+              select(.issue_severity == "HIGH" or .issue_severity == "MEDIUM") | 
+              ["Bandit", .test_id, .issue_severity, .issue_text, (.filename + ":" + (.line_number|tostring))] | @csv' \
+              "$bandit_file" >> $FINAL_CSV
           else
             echo "No Bandit report found"
           fi
@@ -58,17 +64,21 @@ jobs:
         run: |
           semgrep_file="reports/static-analysis-reports/semgrep_results.json"
           if [ -f "$semgrep_file" ]; then
-            jq -r '.results[] | select(.extra.severity == "WARNING" or .extra.severity == "ERROR") |
-            ["Semgrep", .check_id, .extra.severity, .extra.message] | @csv' "$semgrep_file" >> $FINAL_CSV
+            jq -r '.results[] | 
+              select(.extra.severity == "WARNING" or .extra.severity == "ERROR") |
+              ["Semgrep", .check_id, .extra.severity, .extra.message, (.path + ":" + (.start.line|tostring))] | @csv' \
+              "$semgrep_file" >> $FINAL_CSV
           else
             echo "No Semgrep report found"
           fi
-      
+
       - name: Parse Gitleaks Report
         run: |
           gitleaks_file="reports/gitleaks-report/gitleaks.json"
           if [ -f "$gitleaks_file" ]; then
-            jq -r '.[] | ["Gitleaks", .RuleID, "HIGH", .Description] | @csv' "$gitleaks_file" >> $FINAL_CSV
+            jq -r '.[] | 
+              ["Gitleaks", .RuleID, "HIGH", .Description, (.File + ":" + (.StartLine|tostring))] | @csv' \
+              "$gitleaks_file" >> $FINAL_CSV
           else
             echo "No Gitleaks report found"
           fi
