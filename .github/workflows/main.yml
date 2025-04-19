@@ -18,6 +18,6 @@ jobs:
     uses: ./.github/workflows/sca-scan.yml
     needs: Static-Analysis
 
-  Evaluate-Findings:
-    uses: ./.github/workflows/evaluate-results.yml
+  Ready-for-Production:
+    uses: ./.github/workflows/prd-ready.yml
     needs: Dependency-Scan
